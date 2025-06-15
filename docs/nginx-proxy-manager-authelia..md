@@ -1,8 +1,8 @@
 # NGINX Proxy Manager - Configuración personalizada para Authelia y los hosts
 
 
-## **Pegar en el host proxy de authelia (sin comillas). No es necesario modificar si no se modifica el docker-compose.yaml de authelia**
-" location / {
+## **Pegar en el host proxy de authelia. No es necesario modificar si no se modifica el docker-compose.yaml de authelia**
+```conf location / {
 set $upstream_authelia http://authelia:9091; # Tenemos que poner el nombre del container de authelia:puerto elegido
 proxy_pass $upstream_authelia;
 client_body_buffer_size 128k;
@@ -38,7 +38,7 @@ set_real_ip_from 172.18.0.0/16; #Aqui tienes que poner el rango de tu red docker
 real_ip_header CF-Connecting-IP;
 real_ip_recursive on;
 }
-"
+```
 
 
 
