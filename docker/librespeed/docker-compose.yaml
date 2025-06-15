@@ -1,0 +1,22 @@
+services:
+  librespeed:
+    image: adolfintel/speedtest
+    container_name: librespeed
+
+    # Puertos (comentados):
+    # No exponemos el puerto directamente porque accederemos a Librespeed a través de un proxy inverso,
+    # como Nginx Proxy Manager (NPMplus). Si quieres acceder sin proxy, descomenta la siguiente línea:
+    # ports:
+    #   - 8008:80
+
+    environment:
+      - MODE=standalone   # Modo autónomo (no necesita servidor externo ni base de datos)
+
+    restart: unless-stopped    # Reinicia el contenedor automáticamente salvo que lo pares tú
+
+    networks:
+      - homelab           # Conecta el contenedor a la red Docker personalizada 'homelab'
+
+networks:
+  homelab:
+    external: true        # Usa una red Docker llamada 'homelab' ya existente

@@ -1,0 +1,106 @@
+# ------------------------------------------------------------------------------
+#  Archivo de configuración principal de Authelia
+#  Documentación oficial: https://www.authelia.com/docs/configuration/
+# ------------------------------------------------------------------------------
+
+theme: dark  # Tema visual de la interfaz (opciones: dark, light)
+
+# Clave secreta para firmar los tokens JWT de autenticación.
+# Genera una nueva en https://www.grc.com/passwords.htm (elige la de 64 caracteres hexadecimales).
+jwt_secret: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+
+# URL a la que redirige si no existe un dominio configurado.
+default_redirection_url: https://google.com/
+
+server:
+  host: 0.0.0.0    # Escucha en todas las interfaces de red. Déjalo así.
+  port: 9091       # Puerto interno del servicio Authelia. No cambies esto si usas Docker.
+  path: ""         # Normalmente vacío.
+  buffers:
+    read: 4096
+    write: 4096
+  enable_pprof: false
+  enable_expvars: false
+  disable_healthcheck: false
+  tls:
+    key: ""            # Si usas SSL directo aquí, pon la ruta del key/cert. Normalmente se deja vacío si tienes proxy.
+    certificate: ""
+
+log:
+  level: debug    # Nivel de log. Usa 'info' para producción, 'debug' para pruebas.
+
+totp:
+  issuer: lospajaros18.top   # Nombre de dominio principal para los códigos 2FA TOTP (no uses subdominios)
+  period: 30                 # Duración de cada código TOTP (en segundos)
+  skew: 1                    # Margen de tolerancia en la sincronización de tiempo
+
+authentication_backend:
+  password_reset:
+    disable: false
+  refresh_interval: 5m
+  file:
+    path: /config/users_database.yml  # Ruta al archivo de usuarios (instrucciones para crear usuario dentro del propio archivo)
+#    password:
+#      algorithm: argon2id
+#      iterations: 1
+#      key_length: 32
+#      salt_length: 16
+#      memory: 1024
+#      parallelism: 8
+    # Parámetros recomendados para hashear contraseñas. Normalmente Authelia los autodetecta.
+
+access_control:
+  default_policy: two_factor   # Política por defecto (two_factor = requiere doble factor)
+  rules:
+    # Cada regla aplica a un dominio o subdominio, y puede definir si pide 2FA, 1FA o deja pasar ("bypass").
+    - domain:
+        - "auth.lospajaros18.top"       # Subdominio dedicado a Authelia
+      policy: bypass                    # Permite el acceso sin autenticación
+
+    - domain:
+        - "librespeed.lospajaros18.top" # Añade aquí tus subdominios según la protección que quieras
+      policy: one_factor                # Sólo usuario/contraseña
+
+    - domain:
+        - "stirlingpdf.lospajaros18.top"
+      policy: two_factor                # Usuario/contraseña y código 2FA
+
+    - domain:
+        - "transmission.lospajaros18.top"
+      policy: two_factor
+    
+    # Añade más reglas según tus servicios. Cada cambio requiere reiniciar el contenedor de Authelia.
+
+
+
+session:
+  name: authelia_session
+  secret: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX # Genera una clave nueva en https://www.grc.com/passwords.htm (64 caracteres hex)
+  expiration: 3600       # Tiempo de vida de la sesión (en segundos, aquí 1h)
+  inactivity: 300        # Tiempo máximo de inactividad antes de cerrar sesión (en segundos, aquí 5 min)
+  domain: lospajaros18.top  # Tu dominio principal (sin subdominios)
+
+regulation:
+  max_retries: 3         # Máximo de intentos fallidos permitidos
+  find_time: 10m         # Ventana de tiempo para contar los intentos
+  ban_time: 12h          # Tiempo de bloqueo tras superar los intentos permitidos
+# Ejemplo: Si se falla 3 veces en 10 minutos, el usuario se bloquea durante 12 horas.
+
+storage:
+  local:
+    path: /config/db.sqlite3    # Ruta al fichero de base de datos local
+  encryption_key: XXXXXXXXXXXXXXXXXXXX   # Genera una cadena de al menos 20 caracteres alfanuméricos (no la compartas)
+
+notifier:
+  filesystem:
+    filename: /config/notification.txt   # Ruta donde se guardan notificaciones del sistema
+#  disable_startup_check: true           # Opcional: desactiva el chequeo SMTP al arrancar (si usas email)
+#  smtp:
+#    username: youremail@gmail.com       # Usuario de tu cuenta de correo (si usas notificación por email)
+#    password: Y0uRp@55W0rD!             # Contraseña de aplicación (no la de tu cuenta normal)
+#    host: smtp.gmail.com                # Servidor SMTP (Gmail en este ejemplo)
+#    port: 587                           # Puerto SMTP (587 para TLS en Gmail)
+#    sender: youremail@gmail.com         # Remitente de los emails
+#    identifier: localhost
+#    subject: "[Authelia] {title}"       # Asunto del email

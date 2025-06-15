@@ -1,0 +1,27 @@
+services:
+  uptime-kuma:
+    # Imagen oficial de Uptime Kuma (última versión disponible)
+    image: louislam/uptime-kuma:latest
+
+    # Nombre del contenedor para identificarlo fácilmente
+    container_name: uptime-kuma
+
+    volumes:
+      # Carpeta donde Uptime Kuma guarda la configuración y la base de datos
+      - ./config:/app/data
+
+      # El servicio no expone ningún puerto directamente porque será gestionado por un proxy inverso,
+      # como Nginx Proxy Manager (NPM).
+  #  ports:
+  #    - 3001:3001
+
+    # Reinicia automáticamente en caso de fallo o reinicio del sistema
+    restart: always
+
+    networks:
+      - homelab
+
+networks:
+  homelab:
+    # Red Docker externa compartida con otros servicios del homelab
+    external: true

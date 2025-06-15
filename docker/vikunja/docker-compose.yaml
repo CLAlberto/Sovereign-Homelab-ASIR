@@ -1,0 +1,67 @@
+services:
+  db-Vikunja:
+    # Imagen de MariaDB versión 10.11, utilizada como base de datos para Vikunja
+    image: mariadb:10.11
+    # Configura el juego de caracteres y la colación recomendada para compatibilidad total con emojis y caracteres especiales
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    # Carga las variables de entorno sensibles (como contraseñas) desde el archivo .env
+    env_file: .env
+    environment:
+      # Contraseña de root para la base de datos (¡muy importante que sea segura!)
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      # Usuario que usará Vikunja para acceder a la base de datos
+      MYSQL_USER: vikunja
+      # Contraseña de acceso para el usuario vikunja (también debe ser fuerte)
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      # Nombre de la base de datos que utilizará la aplicación
+      MYSQL_DATABASE: vikunja
+    # Carpeta local para guardar los datos persistentes de la base de datos
+    volumes:
+      - ./db:/var/lib/mysql
+    # El contenedor se reiniciará automáticamente salvo que se detenga manualmente
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u $$MYSQL_USER --password=$$MYSQL_PASSWORD"]
+      interval: 2s
+      start_period: 30s
+    # Conecta a la red Docker externa llamada "homelab"
+    networks:
+      - homelab
+
+
+  Vikunja:
+    # Imagen oficial de Vikunja (última versión disponible)
+    image: vikunja/vikunja:latest
+    # Carga el archivo .env para variables sensibles
+    env_file: .env
+    environment:
+      # Tipo de base de datos (MySQL en este caso)
+      VIKUNJA_DATABASE_TYPE: mysql
+      # Dirección del servicio de base de datos (nombre del contenedor db)
+      VIKUNJA_DATABASE_HOST: db-Vikunja
+      # Usuario y contraseña definidos en el servicio de base de datos
+      VIKUNJA_DATABASE_USER: vikunja
+      VIKUNJA_DATABASE_PASSWORD: ${MYSQL_PASSWORD}
+      # Nombre de la base de datos a utilizar
+      VIKUNJA_DATABASE_DATABASE: vikunja
+      # Clave secreta para firmar los JWT (imprescindible que sea larga y secreta)
+      VIKUNJA_SERVICE_JWTSECRET: ${VIKUNJA_SERVICE_JWTSECRET}
+      # URL pública del frontend para redirecciones y enlaces
+      VIKUNJA_SERVICE_FRONTENDURL: ${VIKUNJA_SERVICE_FRONTENDURL}
+    # Carpeta para archivos subidos por usuarios (adjuntos, imágenes…)
+    volumes:
+      - ./files:/app/vikunja/files
+    # Asegura que la base de datos esté lista antes de arrancar la API
+    depends_on:
+      - db-Vikunja
+    # Reinicia el contenedor salvo que se detenga manualmente
+    restart: unless-stopped
+    # Conecta a la red Docker externa llamada "homelab"
+    networks:
+      - homelab
+    # NOTA: Este servicio NO expone puerto al host; el acceso es solo interno por red Docker
+
+networks:
+  homelab:
+    # Especifica que la red ya existe fuera de este compose
+    external: true

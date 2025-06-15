@@ -1,0 +1,36 @@
+services:
+  radarr:
+    # Nombre asignado al contenedor Docker para Radarr
+    container_name: radarr
+    # Imagen oficial Hotio de Radarr; se utiliza la etiqueta por defecto (última versión estable)
+    image: ghcr.io/hotio/radarr:latest
+    # Cargar variables de entorno desde el archivo .env
+    env_file: .env
+      # El servicio no expone ningún puerto directamente porque será gestionado por un proxy inverso,
+      # como Nginx Proxy Manager (NPM).
+  #  ports:
+  #    - "7878:7878"
+    environment:
+      # UID del usuario anfitrión que se mapea dentro del contenedor
+      - PUID=${PUID}
+      # GID del grupo anfitrión
+      - PGID=${PGID}
+      # Zona horaria
+      - TZ=${TZ}
+      # Permiso umask (002 = 775/664)
+      - UMASK=002
+    volumes:
+      # Configuración persistente de Radarr
+      - ./config:/config
+      # Biblioteca de películas gestionada por Radarr (Donde muestra las películas y jellyfin tiene acceso)
+      - ${LIBRARY}/peliculas:/peliculas:rw
+      # Carpeta de descargas donde el cliente torrent (transmission) deja los archivos
+      - ${LIBRARY}/downloads/:/downloads:rw
+    restart: "unless-stopped"
+    networks:
+      - homelab
+
+networks:
+  homelab:
+    # Se conecta a la red Docker con nombre 'homelab' ya creada en el host
+    external: true

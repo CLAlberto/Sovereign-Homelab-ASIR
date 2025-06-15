@@ -1,0 +1,31 @@
+services:
+  prowlarr:
+    # Nombre asignado al contenedor Docker para facilitar la identificación
+    container_name: prowlarr
+    # Imagen a utilizar; se obtiene la última versión de Hotio desde GitHub Container Registry
+    image: ghcr.io/hotio/prowlarr:latest
+    # Puerto interno que se expone al resto de contenedores (no se publica en el host)
+    expose:
+      - 9696
+    environment:
+      # UID del usuario del sistema anfitrión que poseerá los archivos generados
+      - PUID=${PUID}
+      # GID del grupo del sistema anfitrión que poseerá los archivos generados
+      - PGID=${PGID}
+      # Zona horaria del contenedor, heredada del archivo .env
+      - TZ=${TZ}
+      # Máscara de permisos predeterminada para archivos y directorios creados (002 = rw-rw-r--)
+      - UMASK=002
+    volumes:
+      # Monta la carpeta local ./config dentro del contenedor en /config para persistir la configuración
+      - ./config:/config
+    # Reinicia el contenedor automáticamente a menos que se detenga de forma manual
+    restart: "unless-stopped"
+    networks:
+      # Conecta el contenedor a la red docker "homelab"
+      - homelab
+
+networks:
+  homelab:
+    # Indica que la red "homelab" es externa y ya existe en Docker
+    external: true

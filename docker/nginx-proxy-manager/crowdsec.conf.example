@@ -1,0 +1,64 @@
+# Habilita o deshabilita el bouncer
+ENABLED=true
+
+# URL del API local de CrowdSec (puede ser "http://crowdsec:8080" si está en la misma red Docker)
+API_URL=http://crowdsec:8080
+
+# API KEY generada para el bouncer (obtenida con: docker exec -it crowdsec cscli bouncers add npmplus-bouncer)
+API_KEY=pon_aqui_tu_api_key
+
+# Tiempo en minutos para guardar en caché las decisiones del bouncer
+CACHE_EXPIRATION=1
+
+# Define los tipos de remediación que aplica el bouncer: "all" (todos), "ban", "captcha", etc.
+BOUNCING_ON_TYPE=all
+
+# Acción por defecto si CrowdSec no responde: "ban" (bloqueo)
+FALLBACK_REMEDIATION=ban
+
+# Tiempo máximo de espera para peticiones al API (en milisegundos)
+REQUEST_TIMEOUT=2500
+
+# Frecuencia (en segundos) con la que el bouncer actualiza las decisiones de CrowdSec
+UPDATE_FREQUENCY=10
+
+# Si es true, verifica también las peticiones internas (como las afectadas por reglas de rewrite). 
+# Lo normal es dejarlo en false.
+ENABLE_INTERNAL=false
+
+# Modo de operación: "live" (decisiones en tiempo real), "stream" (modo streaming)
+MODE=live
+
+# Puedes excluir rutas concretas del bouncing (déjalo vacío si no quieres excluir nada)
+EXCLUDE_LOCATION=
+
+# Opciones de respuesta para acción "ban":
+# Ruta a la plantilla HTML personalizada que se muestra al usuario baneado
+BAN_TEMPLATE_PATH=/data/crowdsec/ban.html
+# Redirección automática al ser baneado (toma prioridad sobre RET_CODE)
+REDIRECT_LOCATION=
+# Código de respuesta HTTP si no hay redirección (por ejemplo, 403)
+RET_CODE=
+
+# Opciones de respuesta para acción "captcha":
+# Proveedor de captcha: recaptcha, hcaptcha o turnstile (deja vacío para desactivar)
+CAPTCHA_PROVIDER=
+# Clave secreta del captcha (si usas proveedor)
+SECRET_KEY=
+# Site key del captcha (si usas proveedor)
+SITE_KEY=
+# Ruta a la plantilla HTML de captcha
+CAPTCHA_TEMPLATE_PATH=/data/crowdsec/captcha.html
+# Tiempo máximo que el usuario puede tardar en resolver el captcha (en segundos)
+CAPTCHA_EXPIRATION=3600
+
+# Opciones avanzadas para AppSec (protección de aplicaciones)
+# APPSEC_URL=http://crowdsec:7422
+APPSEC_FAILURE_ACTION=none
+APPSEC_CONNECT_TIMEOUT=1000
+APPSEC_SEND_TIMEOUT=30000
+APPSEC_PROCESS_TIMEOUT=10000
+ALWAYS_SEND_TO_APPSEC=false
+
+# Verifica el certificado SSL del API de CrowdSec (deja en true salvo que uses certificados propios autofirmados)
+SSL_VERIFY=true

@@ -1,0 +1,26 @@
+services:
+  actual_server:
+    image: docker.io/actualbudget/actual-server:latest
+    container_name: actual
+   # ports:
+      # El servicio no expone ningún puerto directamente porque será gestionado por un proxy inverso,
+      # como Nginx Proxy Manager (NPM).
+      # Si necesitas acceder al servicio sin proxy, descomenta la siguiente línea y accede por http://localhost:5006
+      # ports:
+      # - '5006:5006'
+    volumes:
+      # Almacenamiento persistente de datos:
+      # Cambia './actual-data' por la ruta donde quieras guardar los datos en tu servidor.
+      # '/data' es la ruta interna del contenedor donde Actual buscará sus archivos.
+       - ./actual-data:/data
+    restart: unless-stopped
+
+    # Conecta este servicio a la red personalizada 'homelab'.
+    networks:
+      - homelab
+
+
+# Definición de redes
+networks:
+  homelab:
+    external: true # Indica que la red 'homelab' ya existe en Docker y no se creará automáticamente.

@@ -1,0 +1,79 @@
+services:
+  # --- Servicio de base de datos MariaDB para Passbolt ---
+  db_passbolt:
+    image: mariadb:10.11
+    restart: unless-stopped
+    container_name: db_passbolt
+    networks:
+      - homelab
+
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "${MYSQL_RANDOM_ROOT_PASSWORD}"  # Genera clave root aleatoria (true)
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"                          # Nombre de la base de datos
+      MYSQL_USER: "${MYSQL_USER}"                                  # Usuario de la base de datos
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"                          # Contraseña del usuario
+    volumes:
+      - database_volume:/var/lib/mysql                             # Datos persistentes de MariaDB
+
+  # --- Servicio principal de Passbolt ---
+  passbolt:
+    image: passbolt/passbolt:latest-ce
+    restart: unless-stopped
+    container_name: passbolt
+
+    depends_on:
+      - db_passbolt         # Arranca solo si la base de datos está disponible
+
+    # Puertos (comentados):
+    # No exponemos el puerto directamente porque accederemos a Passbolt a través de un proxy inverso,
+    # como Nginx Proxy Manager (NPMplus). Si quieres acceder sin proxy, descomenta la siguiente línea:
+    # ports:
+    #  - "${PASSBOLT_PORT_HTTPS:-44311}:443"   # HTTPS (por defecto 44311 si no se especifica)
+    #  - "${PASSBOLT_PORT_HTTP:-811}:80"       # HTTP (por defecto 811 si no se especifica)
+
+    environment:
+      APP_FULL_BASE_URL: "${APP_FULL_BASE_URL}"                       # URL pública de Passbolt (con https:// y tu dominio)
+      DATASOURCES_DEFAULT_HOST: "db_passbolt"         # Host de la base de datos (normalmente db_passbolt)
+      DATASOURCES_DEFAULT_USERNAME: "${MYSQL_USER}" # Usuario de la base de datos
+      DATASOURCES_DEFAULT_PASSWORD: "${MYSQL_PASSWORD}" # Contraseña de la base de datos
+      DATASOURCES_DEFAULT_DATABASE: "${MYSQL_DATABASE}" # Nombre de la base de datos
+
+      # Configuración del correo saliente (SMTP)
+      EMAIL_TRANSPORT_DEFAULT_HOST: "${EMAIL_TRANSPORT_DEFAULT_HOST}"         # Servidor SMTP
+      EMAIL_TRANSPORT_DEFAULT_PORT: "${EMAIL_TRANSPORT_DEFAULT_PORT}"         # Puerto SMTP
+      EMAIL_TRANSPORT_DEFAULT_USERNAME: "${EMAIL_TRANSPORT_DEFAULT_USERNAME}" # Usuario de correo SMTP
+      EMAIL_TRANSPORT_DEFAULT_PASSWORD: "${EMAIL_TRANSPORT_DEFAULT_PASSWORD}" # Contraseña del correo SMTP
+      EMAIL_TRANSPORT_DEFAULT_TLS: "${EMAIL_TRANSPORT_DEFAULT_TLS}"           # Activa/desactiva TLS
+      EMAIL_DEFAULT_FROM: "${EMAIL_DEFAULT_FROM}"                             # Email remitente por defecto
+
+      SET_CONTAINER_TIMEZONE: "${SET_CONTAINER_TIMEZONE}"     # Configura la zona horaria del contenedor (true)
+      TZ: "${TZ}"                                             # Zona horaria (por ejemplo Europe/Madrid)
+      PASSBOLT_SSL_FORCE: "${PASSBOLT_SSL_FORCE}"             # Fuerza HTTPS en Passbolt (true)
+      PASSBOLT_PLUGINS_DESKTOP_ENABLED: "${PASSBOLT_PLUGINS_DESKTOP_ENABLED}" # Habilita el plugin de escritorio
+
+    volumes:
+      - ./passbolt/jwt/:/etc/passbolt/jwt          # Claves JWT persistentes
+      - ./passbolt/gpg/:/etc/passbolt/gpg          # Claves GPG persistentes
+      - ../logs/passbolt:/var/log/passbolt        # Carpeta opcional para logs
+
+    # Espera a que MariaDB esté disponible antes de arrancar Passbolt
+    command:
+      [
+        "/usr/bin/wait-for.sh",
+        "-t",
+        "0",
+        "db_passbolt:3306",
+        "--",
+        "/docker-entrypoint.sh",
+      ]
+    networks:
+      - homelab
+
+# Volumen persistente para los datos de la base de datos MariaDB
+volumes:
+  database_volume:
+
+# Red Docker personalizada (debe existir previamente)
+networks:
+  homelab:
+    external: true

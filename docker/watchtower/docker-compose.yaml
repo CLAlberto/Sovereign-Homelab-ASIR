@@ -1,0 +1,19 @@
+services:
+  watchtower:
+    # Imagen oficial de Watchtower (gestiona actualizaciones automáticas de contenedores)
+    image: containrrr/watchtower
+
+    # Nombre del contenedor para identificarlo fácilmente
+    container_name: watchtower
+
+    # No reiniciar el contenedor automáticamente; lo lanzaremos mediante cron
+    restart: "no"
+
+    volumes:
+      # Monta el socket de Docker para que Watchtower pueda comunicarse con el daemon de Docker
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    # Comando: limpia imágenes antiguas y se ejecuta una única vez
+    command: --cleanup --run-once
+
+#Mirar el archivo "programar-ejecucion-watchtower.md" para ver cómo programar la ejecución a la hora deseada.

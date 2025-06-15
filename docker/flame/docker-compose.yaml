@@ -1,0 +1,32 @@
+services:
+  flame:
+    image: pawelmalak/flame
+    container_name: flame
+
+    volumes:
+      - ./data:/app/data              # Carpeta local para datos persistentes de Flame (marcadores, config, etc)
+      - /var/run/docker.sock:/var/run/docker.sock 
+        # (Opcional) Permite a Flame integrarse con Docker para mostrar y gestionar contenedores desde su interfaz.
+        # Si no necesitas esa función, puedes comentar o quitar esta línea.
+
+    # Puertos (comentados):
+    # No exponemos el puerto directamente porque el acceso se hará a través de un proxy inverso,
+    # como Nginx Proxy Manager (NPMplus). Si necesitas acceder sin proxy, descomenta la siguiente línea.
+    # ports:
+    #   - 5005:5005
+
+
+    # Variables de entorno:
+    environment:
+      - PASSWORD=${PASSWORD}  # Contraseña de administrador, mejor guardada en un archivo .env.
+
+    # Política de reinicio:
+    restart: unless-stopped   # Reinicia el contenedor salvo que lo pares manualmente.
+
+    # Red Docker:
+    networks:
+      - homelab   # Conecta a la red personalizada 'homelab'
+
+networks:
+  homelab:
+    external: true   # Usa una red Docker llamada 'homelab' que ya debe estar creada previamente.

@@ -1,0 +1,50 @@
+services:
+  sonarr:
+    # Imagen oficial de LinuxServer.io (última versión disponible)
+    image: linuxserver/sonarr:latest
+
+    # Nombre del contenedor para reconocerlo fácilmente
+    container_name: sonarr
+
+      # El servicio no expone ningún puerto directamente porque será gestionado por un proxy inverso,
+      # como Nginx Proxy Manager (NPM).
+  #  ports:
+  #  - "8989:8989"   # <host>:<contenedor>
+
+    environment:
+      # UID y GID del usuario/grupo del sistema anfitrión (evita problemas de permisos)
+      - PUID=${PUID}
+      - PGID=${PGID}
+
+      # Zona horaria (para logs correctos)
+      - TZ=${TZ}
+
+      # Permisos por defecto de los archivos creados (002 = 775)
+      - UMASK=002
+
+    volumes:
+      # Configuración interna de Sonarr (base de datos, ajustes…)
+      - ./config:/config
+
+      # Biblioteca de series (modo lectura/escritura)
+      - ${LIBRARY}/series:/series:rw
+
+      # Carpeta donde llegan las descargas antes de clasificarse
+      - ${LIBRARY}/downloads/:/downloads:rw
+
+    # Reinicia el contenedor salvo que lo detengas manualmente
+    restart: "unless-stopped"
+
+    networks:
+      - homelab
+
+networks:
+  homelab:
+    # Red Docker externa ya creada para el homelab
+    external: true
+
+
+
+
+
+

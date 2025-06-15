@@ -1,0 +1,48 @@
+services:
+  transmission:
+    # Imagen oficial de Transmission mantenida por LinuxServer.io (última versión disponible)
+    image: lscr.io/linuxserver/transmission:latest
+
+    # Nombre del contenedor para identificarlo fácilmente
+    container_name: transmission
+
+    # Archivo .env con las variables de entorno comunes (PUID, PGID, TZ…)
+    env_file: .env
+
+    environment:
+      # UID del usuario del sistema anfitrión que ejecutará los procesos dentro del contenedor
+      - PUID=${PUID}
+      # GID del grupo del sistema anfitrión
+      - PGID=${PGID}
+      # Zona horaria para que los registros tengan la hora correcta
+      - TZ=${TZ}
+      # Activa la interfaz web moderna Flood (opcional, pero recomendada)
+      - DOCKER_MODS=linuxserver/mods:transmission-floodui
+      # Limita el acceso RPC (remoto) a una sub‑red concreta (opcional: cámbiala a la tuya)
+      # - WHITELIST=172.18.0.*
+
+    volumes:
+      # Carpeta con la configuración y base de datos de Transmission
+      - ./config:/config
+      # Carpeta compartida donde se guardan las descargas
+      - ${LIBRARY}/downloads:/downloads
+
+    # Expone solo el puerto interno 9091 (para proxy inverso); no se publica al host directamente
+    expose:
+      - "9091"
+
+    # Puertos para el tráfico BitTorrent (TCP y UDP). Ajusta si tu proveedor exige otros.
+    ports:
+      - "51413:51413"      # TCP
+      - "51413:51413/udp"  # UDP
+
+    # Reinicia el contenedor automáticamente salvo que lo detengas manualmente
+    restart: unless-stopped
+
+    networks:
+      - homelab
+
+networks:
+  homelab:
+    # Red Docker externa ya creada para todo el homelab
+    external: true

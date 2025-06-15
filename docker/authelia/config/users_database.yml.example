@@ -1,0 +1,18 @@
+users:
+  Alberto: #Cambia el nombre al que más te guste, este será el que usemos para el login
+    displayname: "Alberto Lopez" #Cambia el nombre al que más te guste, introducelo entre las comillas
+    password: ""
+    #La contraseña la creamos con https://argon2.online/
+    #En plain text input, ponemos la contraseña que queremos para hacer el login en authelia
+    #Seleccionamos el boton de argon2id
+    #Pulsamos en la tuerca de salt y nos deben salir unas letras en ese recuadro
+    #Configramos con los siguientes parametros parallelism Factor: 8 memory cost: 1024 iterations: 1 hash length: 32
+    #Pulsamos en generate hash y nos debe dar algo asi en el campo outputin Encoded Form "$argon2id$v=19$m=1024,t=1,p=8$NTEwNGFYVHNGNlo2OGxwOA$rPYzg2lYoNH7MQ5pv6m3isHCCcJYnf+1A/uIiMUrUhE"
+
+    email: alberto@lospajaros18.top #tu correo electronico
+    groups: #si quieres crear un grupo o grupos, cambia los nombres a continuacion
+      - admins
+      - dev
+ 
+
+      #Cada vez que creemos un usuario, hay que parar y arrancar el contenedor de authelia para que ejecute los cambios.

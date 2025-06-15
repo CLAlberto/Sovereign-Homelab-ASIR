@@ -1,0 +1,30 @@
+services:
+  netalertx:
+    container_name: netalertx
+
+    # Imagen oficial (usa la versión estable, si quieres la de desarrollo descomenta la otra línea)
+    # image: "jokobsk/netalertx-dev:latest"
+    image: "jokobsk/netalertx:latest"
+
+    # Modo red (comentado)
+    # network_mode: "host"
+    # Si necesitas que NetAlertX vea toda tu red como si fuera el host, descomenta la línea anterior.
+    # (¡Ojo! Al usar proxy inverso normalmente NO es necesario usar modo host).
+
+    restart: unless-stopped   # Reinicia el contenedor salvo que lo pares tú
+
+    volumes:
+      - ./config:/app/config        # Carpeta local para la configuración persistente
+      - ./appdata:/app/db/          # Carpeta local para la base de datos del servicio
+      # - ./logs:/app/front/log     # (Opcional) Carpeta para logs de depuración
+
+    environment:
+      - TZ=Europe/Madrid            # Zona horaria
+      - PORT=20211                  # Puerto interno en el que corre el servicio
+
+    networks:
+      - homelab                     # Red Docker personalizada (debe existir)
+
+networks:
+  homelab:
+    external: true                  # Usa una red Docker llamada 'homelab' ya existente

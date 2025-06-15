@@ -1,0 +1,21 @@
+services:
+  it-tools:
+    image: ghcr.io/corentinth/it-tools:latest
+    container_name: it-tools
+
+    # Política de reinicio:
+    restart: unless-stopped   # Reinicia el contenedor automáticamente salvo que lo pares manualmente.
+
+    # Puertos (comentados):
+    # No exponemos el puerto directamente porque accederemos a IT-Tools a través de un proxy inverso
+    # como Nginx Proxy Manager (NPMplus). Si quieres acceder sin proxy, descomenta la siguiente línea.
+    # ports:
+    #   - 8081:80
+
+    # Red Docker personalizada:
+    networks:
+      - homelab   # Conecta este servicio a la red 'homelab'
+
+networks:
+  homelab:
+    external: true   # Usa una red Docker llamada 'homelab' ya existente

@@ -1,0 +1,27 @@
+services:
+  authelia:
+    image: authelia/authelia:latest
+    container_name: authelia
+    restart: unless-stopped     # El contenedor se reiniciará automáticamente a menos que lo detengas manualmente.
+    environment:
+      - TZ=Europe/Madrid
+
+      # Monta la carpeta 'config' local dentro del contenedor.
+      # Aquí debes poner los archivos de configuración: configuration.yml y users_database.yml    
+    volumes:
+      - ./config:/config
+
+
+    # Expone el puerto 9091 SOLO para otros contenedores en la misma red Docker.
+    # Este puerto NO estará disponible desde fuera del servidor (no accesible desde tu PC directamente).
+    # Es útil cuando usas un proxy inverso como Nginx Proxy Manager (NPM),
+    # que estará en la misma red y podrá acceder a este puerto.      
+    expose:
+      - "9091"                         # API /verify y portal
+    networks:
+      - homelab # Conecta este servicio a la red personalizada 'homelab'.
+
+# Definición de redes
+networks:
+  homelab:
+    external: true # Indica que la red 'homelab' ya existe en Docker y no se creará automáticamente.

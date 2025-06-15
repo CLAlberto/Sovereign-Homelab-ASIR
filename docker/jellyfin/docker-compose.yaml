@@ -1,0 +1,31 @@
+services:
+  jellyfin:
+    container_name: jellyfin
+    image: ghcr.io/hotio/jellyfin
+
+    # Puertos (comentados):
+    # No se expone el puerto directamente porque se accede a través de un proxy inverso
+    # como Nginx Proxy Manager (NPMplus). Si quieres acceder directamente, descomenta:
+    # ports:
+    #   - "8096:8096"
+
+    environment:
+      - PUID=${PUID}   # ID de usuario Linux (para permisos de archivos)
+      - PGID=${PGID}   # ID de grupo Linux
+      - TZ=${TZ}       # Zona horaria (ej: Europe/Madrid)
+      - UMASK=002      # Permisos de archivos y carpetas creados por el contenedor
+
+    volumes:
+      - ./config:/config                # Configuración persistente de Jellyfin (ajustes, plugins, etc)
+      - ${LIBRARY}/peliculas:/data/peliculas   # Carpeta de películas (ruta configurable por .env)
+      - ${LIBRARY}/series:/data/series         # Carpeta de series (ruta configurable por .env)
+      - ../logs/jellyfin:/config/log    # Logs de Jellyfin en una carpeta dedicada
+
+    restart: unless-stopped             # Reinicia el contenedor salvo que lo pares tú
+
+    networks:
+      - homelab                        # Red Docker personalizada (debe existir)
+
+networks:
+  homelab:
+    external: true                     # Usa la red Docker 'homelab' ya existente

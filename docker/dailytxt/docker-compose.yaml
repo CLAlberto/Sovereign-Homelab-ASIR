@@ -1,0 +1,28 @@
+services:
+  dailytxt:
+    image: phitux/dailytxt:latest  # Imagen oficial del contenedor DailyTxT (última versión disponible)
+    container_name: dailytxt       # Nombre del contenedor para identificarlo fácilmente en `docker ps`
+    restart: always                # El contenedor se reinicia automáticamente si falla o al arrancar el sistema
+
+    networks:
+      - homelab                    # Lo conectamos a la red externa "homelab", creada previamente con Docker
+
+    environment:
+      - PORT=${DAILTYXT_PORT}
+      - SECRET_KEY=${DAILYTXT_SECRET_KEY}
+      - ALLOW_REGISTRATION=${DAILYTXT_ALLOW_REGISTRATION}
+      - DATA_INDENT=${DAILYTXT_DATA_INDENT}
+      - JWT_EXP_DAYS=${DAILYTXT_JWT_EXP_DAYS}
+      - ENABLE_UPDATE_CHECK=${DAILYTXT_ENABLE_UPDATE_CHECK}    
+
+   # ports:
+      # El servicio no expone ningún puerto directamente porque será gestionado por un proxy inverso,
+      # como Nginx Proxy Manager (NPM).
+      #- "8765:8765"               # Expone el puerto 8765 del contenedor al mismo puerto del host
+
+    volumes:
+      - ./data:/app/data          # Guarda los datos persistentes en la carpeta `./data` de tu máquina (útil para backup)
+
+networks:
+  homelab:
+    external: true                # Indicamos que la red "homelab" ya existe y es gestionada externamente

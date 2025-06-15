@@ -1,0 +1,14 @@
+# Archivo de configuración de adquisición de logs para CrowdSec
+# Aquí le indicas a CrowdSec qué archivos de registro (logs) debe analizar.
+
+filenames:
+  # Rutas a los archivos de logs que quieres que lea CrowdSec:
+  - /logs/jellyfin/log*.log        # Todos los archivos log de Jellyfin (usa el comodín *)
+  - /logs/nginx/access.log         # Log de accesos de Nginx
+  - /logs/nginx/error.log          # Log de errores de Nginx
+  - /logs/nginx/stream.log         # Log de streaming de Nginx
+  # - /logs/transmission/transmission.log   # Descomenta esta línea si quieres analizar los logs de Transmission
+
+labels:
+  type: npmplus  # Etiqueta que puedes usar para asociar escenarios, parsers, o colecciones a este conjunto de logs
+  # Puedes cambiar 'npmplus' por otra etiqueta si quieres agrupar estos logs de forma diferente.

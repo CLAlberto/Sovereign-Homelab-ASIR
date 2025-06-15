@@ -1,0 +1,87 @@
+# -----------------------------------------------------------------------------
+# .gitignore para SOVEREIGN HOME LAB HUB
+# -----------------------------------------------------------------------------
+# Ignora todos los .env dentro de docker/ y subcarpetas
+docker/.env
+docker/*/.env
+docker/**/.env
+
+# No ignora los .env.example (los sube como plantillas)
+!docker/**/.env.example
+# -----------------------------------------------------------------------------
+# Ignora datos persistentes y configuraciones generadas en tiempo de ejecución
+docker/actual/actual-data/
+docker/authelia/config/*
+!docker/authelia/config/users_database.yml.example
+!docker/authelia/config/configuration.yml.example
+
+# Crowdsec (ignorar datos y configs salvo archivos clave)
+docker/crowdsec/data
+docker/crowdsec/config/*
+!docker/crowdsec/config/acquis.yaml
+
+
+docker/flame/data
+docker/gotify/gotify_data
+docker/immich/postgres
+docker/jellyfin/config
+docker/netalertx/appdata
+docker/netalertx/config
+docker/nextcloud/nextcloud_config
+docker/nextcloud/nextcloud_db
+docker/nextcloud/nextcloud_themes
+docker/nginx-proxy-manager/data
+docker/nginx-proxy-manager/letsencrypt
+docker/nginx-proxy-manager/crowdsec.conf
+
+# Passbolt: ignora todo salvo los archivos mínimos para ejemplo o docker-compose
+docker/passbolt/*
+!docker/passbolt/.env.example
+!docker/passbolt/docker-compose.yaml
+!docker/passbolt/unbound/local-domain.conf
+
+# Pi-hole: igual, ignora datos salvo plantillas de ejemplo y configuración mínima
+docker/pihole/*
+!docker/pihole/docker-compose.yml
+!docker/pihole/.env.example
+!docker/pihole/unbound/
+!docker/pihole/unbound/local-domains.conf
+
+# Servicios multimedia y PVR
+docker/prowlarr/config
+docker/radarr/config
+docker/sonarr/config
+docker/lidarr/lidarr_config
+
+# Servicios de PDF, monitorización y almacenamiento
+docker/stirling-pdf/extraConfigs
+docker/stirling-pdf/trainingData
+docker/transmission/config
+docker/uptime-kuma/config
+docker/vikunja/db
+docker/vikunja/files
+/library/*
+
+# -----------------------------------------------------------------------------
+# Ignorar archivos de caché, temporales y bases de datos ligeras
+*.log
+*.bak
+*.tmp
+*.cache
+*.sqlite3
+
+# -----------------------------------------------------------------------------
+# Archivos y carpetas propias de tu editor (VSCode, JetBrains, Mac, Windows, etc.)
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# -----------------------------------------------------------------------------
+# Excluir cualquier archivo oculto de sistema y copias de seguridad (por ejemplo, terminados en ~)
+.*~
+# -----------------------------------------------------------------------------
+# Snippets y plantillas opcionales de configuración (ajusta si tienes ficheros sensibles)
+docker/nginx-proxy-manager/snippets/

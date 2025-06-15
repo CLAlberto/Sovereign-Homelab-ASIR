@@ -1,0 +1,42 @@
+services:
+  npmplus:
+    container_name: npmplus
+
+    # Usa la imagen oficial de GitHub Container Registry, que es la que más se actualiza
+    image: ghcr.io/zoeyvid/npmplus:latest
+
+    restart: unless-stopped   # Reinicia el contenedor automáticamente salvo que lo pares tú
+
+    networks:
+      - homelab               # Red Docker personalizada (debe existir)
+
+    # Puertos principales:
+    # 80  -> HTTP (web normal)
+    # 81  -> Interfaz de administración
+    # 443 -> HTTPS (SSL)
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+
+    volumes:
+      - ./data:/data                 # Carpeta principal para configuraciones, certificados y datos de NPMplus
+      # - ./letsencrypt:/etc/letsencrypt   
+      # Solo para el PRIMER arranque si migras desde NPM clásico.  
+      # Tras la migración, quita esta línea para evitar conflictos de certificados.
+      - ./snippets:/snippets         # Snippets personalizados para Nginx (opcional, recomendado)
+      - ./crowdsec.conf:/data/crowdsec/crowdsec.conf   # Configuración de integración con CrowdSec
+      - ../logs/nginx/access.log:/data/nginx/access.log     # Logs de acceso HTTP
+      - ../logs/nginx/error.log:/data/nginx/error.log       # Logs de error HTTP
+      - ../logs/nginx/stream.log:/data/nginx/stream.log     # Logs de stream (TCP/UDP)
+
+    environment:
+      - TZ=Europe/Madrid             # Zona horaria, cámbiala si vives en otro país
+      - ACME_EMAIL=albertolc1991@gmail.com   # Correo para la gestión de certificados SSL (Let’s Encrypt), recomendado ponerlo
+      - "LOGROTATE=true"             # Activa la rotación diaria de logs (por defecto es false)
+      # Puedes añadir aquí más variables de entorno avanzadas si las necesitas (normalmente no hace falta)
+      # Tutorial de ayuda (no es obligatorio pero ayuda a comprender): https://www.youtube.com/watch?v=qlcVx-k-02E
+
+networks:
+  homelab:
+    external: true   # Usa una red Docker llamada 'homelab' ya existente

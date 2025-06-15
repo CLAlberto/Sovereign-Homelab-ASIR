@@ -1,0 +1,117 @@
+#
+# ATENCIÓN: Para instalar Immich, sigue la guía oficial:
+# https://immich.app/docs/install/docker-compose
+#
+# Asegúrate de usar SIEMPRE el docker-compose.yml de la release actual:
+# https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
+#
+# El archivo de la rama "main" puede NO ser compatible con la última versión estable.
+#
+
+name: immich
+
+services:
+  # --- SERVICIO PRINCIPAL: Servidor de Immich (gestiona la aplicación y las fotos/vídeos)
+  immich-server:
+    container_name: immich_server
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+    # Para aceleración por hardware en transcodificación de vídeo,
+    # descomenta y ajusta el bloque 'extends' según tu hardware (ver docs de Immich)
+    # extends:
+    #   file: hwaccel.transcoding.yml
+    #   service: cpu  # Opciones: [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl]
+
+    volumes:
+      # Almacenamiento de archivos subidos. No edites aquí, cambia la variable UPLOAD_LOCATION en tu .env
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      # Mantén la hora local sincronizada con el host
+      - /etc/localtime:/etc/localtime:ro
+
+    env_file:
+      - .env  # Variables de entorno (usuario, contraseñas, rutas, etc.)
+
+   # ports:
+   #   - '2283:2283'  # Puerto para acceder a la web de Immich
+
+    depends_on:
+      - redis      # Espera a que Redis esté levantado
+      - database   # Espera a que PostgreSQL esté listo
+
+    restart: always
+
+    healthcheck:
+      disable: false
+
+    networks:
+      - homelab
+
+  # --- SERVICIO DE MACHINE LEARNING: procesa reconocimiento facial, objetos, etc.
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    # Para aceleración por hardware en ML, añade el sufijo a la imagen, ej: "-cuda"
+    # Ejemplo: ${IMMICH_VERSION:-release}-cuda
+    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
+    # Para usar aceleración de hardware, consulta la documentación y ajusta el bloque 'extends'
+    # extends:
+    #   file: hwaccel.ml.yml
+    #   service: cpu  # Opciones: [armnn, cuda, rocm, openvino, openvino-wsl, rknn]
+
+    volumes:
+      - model-cache:/cache  # Cache local para modelos de Machine Learning
+
+    env_file:
+      - .env
+
+    restart: always
+    healthcheck:
+      disable: false
+
+    networks:
+      - homelab
+
+  # --- SERVICIO DE REDIS: base de datos en memoria para cachés, colas, etc.
+  redis:
+    container_name: immich_redis
+    image: docker.io/valkey/valkey:8-bookworm@sha256:ff21bc0f8194dc9c105b769aeabf9585fea6a8ed649c0781caeac5cb3c247884
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+    healthcheck:
+      test: redis-cli ping || exit 1
+
+    restart: always
+
+    networks:
+      - homelab
+
+  # --- SERVICIO DE BASE DE DATOS: PostgreSQL adaptado a Immich
+  database:
+    container_name: immich_postgres
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0-pgvectors0.2.0@sha256:fa4f6e0971f454cd95fec5a9aaed2ed93d8f46725cc6bc61e0698e97dba96da1
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+      
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}         # Contraseña (define en .env)
+      POSTGRES_USER: ${DB_USERNAME}             # Usuario (define en .env)
+      POSTGRES_DB: ${DB_DATABASE_NAME}          # Nombre de la base de datos (define en .env)
+      POSTGRES_INITDB_ARGS: '--data-checksums'  # Config extra de inicio (opcional)
+      # Descomenta la siguiente línea si la base de datos NO está en un SSD:
+      DB_STORAGE_TYPE: 'HDD'
+
+    volumes:
+      # Almacenamiento de la base de datos. Cambia la ubicación en el .env si lo necesitas.
+      - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
+
+    restart: always
+
+    networks:
+      - homelab
+
+# --- Volumen para el caché de modelos de Machine Learning
+volumes:
+  model-cache:
+
+# --- Red Docker personalizada, debes crearla previamente (o la crea docker-compose si no existe)
+networks:
+  homelab:
+    external: true

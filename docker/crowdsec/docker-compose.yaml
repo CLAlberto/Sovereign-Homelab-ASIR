@@ -1,0 +1,42 @@
+services:
+  crowdsec:
+    image: crowdsecurity/crowdsec:latest
+    container_name: crowdsec
+
+    # Reinicia el contenedor automáticamente a menos que lo detengas manualmente.
+    restart: unless-stopped
+
+    volumes:
+      # Carpeta local 'data' para almacenar los datos persistentes de CrowdSec (como bases de datos internas y estado).
+      - ./data:/var/lib/crowdsec/data
+
+      # Carpeta local 'config' para la configuración personalizada de CrowdSec (editas los archivos aquí).
+      - ./config:/etc/crowdsec
+
+      # Rutas a logs de otros servicios para analizarlos (acceso de solo lectura, 'ro'):
+      - ../logs/jellyfin:/logs/jellyfin:ro
+      - ../logs/nginx/access.log:/logs/nginx/access.log:ro
+      - ../logs/nginx/error.log:/logs/nginx/error.log:ro
+      - ../logs/nginx/stream.log:/logs/nginx/stream.log:ro
+      # - ../logs/transmission:/logs/transmission:ro  # Descomenta esta línea si quieres analizar los logs de Transmission
+
+    environment:
+      - TZ=Europe/Madrid
+      # Colecciones que quieres que instale CrowdSec automáticamente al arrancar.
+      # Puedes añadir varias, separadas por espacios.
+      - COLLECTIONS=ZoeyVid/npmplus crowdsecurity/nginx
+
+    ports:
+      # Mapea el puerto 8086 del host al 8080 del contenedor (API local de CrowdSec).
+      - "8086:8080"
+      # Mapea el puerto 8088 del host al 8082 del contenedor (API local para bouncers/autorizadores externos).
+      - "8088:8082"
+
+    # Conecta este servicio a la red Docker personalizada 'homelab'.
+    networks:
+      - homelab
+
+# Definición de redes
+networks:
+  homelab:
+    external: true # Indica que la red 'homelab' ya existe en Docker y no se creará automáticamente.

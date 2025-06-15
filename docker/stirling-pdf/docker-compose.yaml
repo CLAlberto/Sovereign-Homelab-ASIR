@@ -1,0 +1,40 @@
+services:
+  stirling-pdf:
+    # Imagen oficial de Stirling PDF (última versión disponible)
+    image: stirlingtools/stirling-pdf:latest-fat
+
+    # Nombre del contenedor para identificarlo fácilmente
+    container_name: stirlingpdf
+
+    # Reinicia el contenedor automáticamente salvo que lo detengas manualmente
+    restart: unless-stopped
+
+    # Puerto interno 8082 (API/Web) no se publica al host; será gestionado por un proxy inverso
+    # ports:
+    #   - "8082:8082"  # <host>:<contenedor>
+
+    volumes:
+      # Datos de entrenamiento de Tesseract para añadir idiomas de OCR adicionales
+      - ./trainingData:/usr/share/tessdata
+      # Configuraciones extra de la aplicación
+      - ./extraConfigs:/configs
+      # Archivos personalizados opcionales
+      # - ./customFiles:/customFiles/
+      # Logs opcionales
+      # - ./logs:/logs/
+
+    environment:
+      # Desactiva las medidas de seguridad internas de Stirling‑PDF (útil cuando se usa tras un proxy inverso seguro)
+      - DOCKER_ENABLE_SECURITY=false
+      # Desactiva módulos avanzados de libro y HTML para reducir tamaño/tiempo de arranque
+      - INSTALL_BOOK_AND_ADVANCED_HTML_OPS=false
+      # Idioma(es) disponible(s) para OCR: Español (es_ES)
+      - LANGS=es_ES
+
+    networks:
+      - homelab
+
+networks:
+  homelab:
+    # Red Docker externa ya creada, compartida con otros servicios del homelab
+    external: true
