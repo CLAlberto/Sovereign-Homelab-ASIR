@@ -26,7 +26,7 @@ Este proyecto está pensado para funcionar **sobre Ubuntu Server** utilizando co
 
 **Requisitos mínimos recomendados:**
 - Procesador x86_64 con soporte de virtualización (2 o más núcleos recomendados)
-- 8 GB o más recomendado para múltiples servicios
+- 8 GB de RAM o más recomendado para múltiples servicios
 - 60 GB de espacio libre en disco (SSD preferible y HDD de gran capacidad para multimedia recomendado)
 - Acceso a Internet para descargar imágenes y actualizaciones
 - Conexión de red local para acceder a los servicios
