@@ -50,6 +50,7 @@ real_ip_recursive on;
 
  ## **Pegar en el host y cambiar "$upstream_transmission http://transmission:9091;" por "$upstream_XXXXXXX http://XXXXXXX:YYYY;" Donde XXXXXXX es el nombre del contenedor del host y YYYY el puerto INTERNO del contenedor, esta config es un ejemplo, pero tal como está funciona perfectamente para transmission si no se cambia nada del docker-compose.yaml**
 # Ruta interna que se usa para verificar la autenticación con Authelia
+```
 location /authelia {
     internal;
 
