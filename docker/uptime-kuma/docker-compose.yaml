@@ -9,6 +9,7 @@ services:
     volumes:
       # Carpeta donde Uptime Kuma guarda la configuración y la base de datos
       - ./config:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock
 
       # El servicio no expone ningún puerto directamente porque será gestionado por un proxy inverso,
       # como Nginx Proxy Manager (NPM).
